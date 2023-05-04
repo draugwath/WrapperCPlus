@@ -26,6 +26,10 @@ private:
     QString m_lastReceivedLine;
     void writeOutputToFile(const QString &text);
     void appendOutput(const QString &text);
+    QString m_stdoutBuffer;
+    QString m_stderrBuffer;
+    QSet<QString> uniqueOutputs;
+
 };
 
 #endif // CONNECTIVITYTEST_H

@@ -113,23 +113,30 @@ void ConnectivityTest::on_startTest_clicked()
         arguments << "/connectivity_test" << QString("/account:%1").arg(username) << QString("/password:%1").arg(password);
     }
 
-    // Merge standard output and standard error streams
-    process->setProcessChannelMode(QProcess::MergedChannels);
-
-    connect(process, &QProcess::readyRead, [this, process]() {
-        QString output = process->readAll();
-        appendOutput(output);
-        if (ui->outputToFile->isChecked()) {
-            writeOutputToFile(output);
+    connect(process, &QProcess::readyReadStandardOutput, [this, process]() {
+        QByteArray newData = process->readAllStandardOutput();
+        QString output = QString::fromUtf8(newData);
+        if (!output.isEmpty() && !uniqueOutputs.contains(output)) {
+            uniqueOutputs.insert(output);
+            appendOutput(output);
+            if (ui->outputToFile->isChecked()) {
+                writeOutputToFile(output);
+            }
         }
     });
 
-    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [this](int exitCode, QProcess::ExitStatus exitStatus) {
-        // Handle the process finished signal
-
-        // Re-enable the Test button
-        ui->startTest->setEnabled(true);
+    connect(process, &QProcess::readyReadStandardError, [this, process]() {
+        QByteArray newData = process->readAllStandardError();
+        QString output = QString::fromUtf8(newData);
+        if (!output.isEmpty() && !uniqueOutputs.contains(output)) {
+            uniqueOutputs.insert(output);
+            appendOutput(output);
+            if (ui->outputToFile->isChecked()) {
+                writeOutputToFile(output);
+            }
+        }
     });
+
     process->start(program, arguments);
 }
 
