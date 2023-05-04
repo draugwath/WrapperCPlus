@@ -112,20 +112,18 @@ void ConnectivityTest::on_startTest_clicked()
     {
         arguments << "/connectivity_test" << QString("/account:%1").arg(username) << QString("/password:%1").arg(password);
     }
-    connect(process, &QProcess::readyReadStandardOutput, [this, process]() {
-        QString output = process->readAllStandardOutput();
+
+    // Merge standard output and standard error streams
+    process->setProcessChannelMode(QProcess::MergedChannels);
+
+    connect(process, &QProcess::readyRead, [this, process]() {
+        QString output = process->readAll();
         appendOutput(output);
         if (ui->outputToFile->isChecked()) {
             writeOutputToFile(output);
         }
     });
-    connect(process, &QProcess::readyReadStandardError, [this, process]() {
-        QString output = process->readAllStandardError();
-        appendOutput(output);
-        if (ui->outputToFile->isChecked()) {
-            writeOutputToFile(output);
-        }
-    });
+
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [this](int exitCode, QProcess::ExitStatus exitStatus) {
         // Handle the process finished signal
 
@@ -134,6 +132,7 @@ void ConnectivityTest::on_startTest_clicked()
     });
     process->start(program, arguments);
 }
+
 
 void ConnectivityTest::on_noLogin_stateChanged(int state)
 {
