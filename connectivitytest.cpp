@@ -49,10 +49,7 @@ void ConnectivityTest::appendOutput(const QString &text)
     QStringList lines = text.split("\n");
 
     for (const QString &line : lines) {
-        if (line.isEmpty() || line == m_lastReceivedLine) {
-            continue;
-        }
-        m_lastReceivedLine = line;
+
         if (line.contains("SUCCESS")) {
             int index = line.indexOf("SUCCESS");
             cursor.insertText(line.left(index));
